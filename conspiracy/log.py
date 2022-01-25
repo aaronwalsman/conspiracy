@@ -18,6 +18,11 @@ class ConsecutiveLog:
             'data' : self.data,
         }
     
+    def set_state(self, state):
+        self.dims = state['dims']
+        self.step = state['step']
+        self.data = state['data']
+    
     def log(self, item):
         assert len(item) == self.dims
         if self.step >= self.data.shape[0]:
@@ -98,6 +103,10 @@ class SynchronousConsecutiveLog:
             assert name in self.logs, 'Name: %s not in %s'%(
                 name, list(self.logs.keys()))
             t = time.time()
+            v = float(value)
+            if math.isnan(v):
+                print('logging NAN: %s'%name)
+            
             data = numpy.array([self.global_step, t, float(value)])
             self.logs[name].log(data)
     
