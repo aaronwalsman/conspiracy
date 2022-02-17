@@ -6,7 +6,7 @@ with open("README.md", "r") as fh:
 setuptools.setup(
     name="conspiracy",
     version="0.0.0",
-    install_requires = ['numpy'],
+    install_requires = ['numpy', 'colorama'],
     author="Aaron Walsman",
     author_email="aaronwalsman@gmail.com",
     description='Terminal Plotter',
