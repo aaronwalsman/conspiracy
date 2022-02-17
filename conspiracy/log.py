@@ -58,7 +58,7 @@ class ConsecutiveCompressedLog:
         self.dims = state['dims']
         self.step = state['step']
         self.data = state['data']
-        self.compresssion = state['compression']
+        self.compression = state['compression']
     
     def log(self, item):
         assert len(item) == self.dims
