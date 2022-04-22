@@ -51,25 +51,6 @@ bm = chr(0x2530 + 0x4)
 mm = chr(0x2530 + 0xc)
 ss = ' '
 
-# text_image processing ========================================================
-def cat_text_images_horizontal(
-    text_images, separator='', left_pad='', right_pad=''
-):
-    split_text_images = [list(im.splitlines()) for im in text_images]
-    lines = [
-        left_pad + separator.join(l) + right_pad
-        for l in zip(*split_text_images)
-    ]
-    return '\n'.join(lines)
-
-def cat_text_images_vertical(
-    text_images, separator='', top_pad='', bottom_pad=''
-):
-    width = len(text_images[0].splitlines()[0])
-    if separator:
-        separator = width * separator + '\n'
-    return top_pad * width + separator.join(text_images) + bottom_pad * width
-
 # int_image to text_image conversion ===========================================
 def chunk_to_braille(chunk):
     '''
@@ -328,9 +309,8 @@ def plot_poly_lines(
 def grid(text_images, grid_width, cell_width, border=None):
     content = []
     
-    w = cell_width//2
     def h_line(l, h, m, r):
-        return l + (w*h + m) * (grid_width-1) + w*h + r
+        return l + (cell_width*h + m) * (grid_width-1) + cell_width*h + r
     
     if border == 'line':
         content.append(h_line(tl, hh, tm, tr))
