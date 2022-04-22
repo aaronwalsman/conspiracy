@@ -4,65 +4,70 @@ import pickle
 
 from conspiracy.log import Log, plot_logs, plot_logs_grid
 
-logs = {
-    'cos' : Log(),
-    'sin' : Log(),
-    'lin' : Log(),
-    'zero' : Log(),
-}
-
 n = 50001
 
+# make some data
+# notice we are putting some sleeps in here to mess with the wall-clock time
+cos = Log()
+sin = Log()
+lin = Log()
+zero = Log()
+
 for i in range(n):
-    logs['cos'].log(math.cos(i/10000 * math.pi))
-    logs['sin'].log(math.sin(i/25000 * math.pi))
-    logs['zero'].log(0.)
+    cos.log(math.cos(i/10000 * math.pi))
+    sin.log(math.sin(i/25000 * math.pi))
     if i % 5000 == 0:
         time.sleep(0.1)
 
 for i in range(n):
-    logs['lin'].log(i/(n-1) * 2 - 1)
+    lin.log(i/(n-1) * 2 - 1)
+    zero.log(0.)
     if i % 10000 == 0:
         time.sleep(0.2)
 
+# plot all four functions in one screen using the step index as the x-axis
 plot = plot_logs(
-    logs,
-    colors='AUTO',
-    legend=True,
-    min_max_y=True,
-    width=160,
-    height=60,
-    x_coord='step',
-)
-print(plot)
-
-plot = plot_logs(
-    {'cos':logs['cos'], 'lin':logs['lin']},
+    {'cos':cos, 'sin':sin, 'lin':lin, 'zero':zero},
     colors='AUTO',
     border='top_line',
     legend=True,
     min_max_y=True,
-    width=160,
-    height=60,
+    width=80,
+    height=20,
+    x_coord='step',
+)
+print(plot)
+
+# plot cosine and linear using absolute wall-clock time as the x-axis
+plot = plot_logs(
+    {'cos':cos, 'lin':lin},
+    colors='AUTO',
+    border='top_line',
+    legend=True,
+    min_max_y=True,
+    width=80,
+    height=20,
     x_coord='time',
 )
 print(plot)
 
+# plot cosine and linear using relative wall-clock time on the x-axis
 plot = plot_logs(
-    {'cos':logs['cos'], 'lin':logs['lin']},
+    {'cos':cos, 'lin':lin},
     colors='AUTO',
-    border='top_bottom_line',
+    border='line',
+    title='Super cool plot',
     legend=True,
     min_max_y=True,
-    width=160,
-    height=60,
+    width=80,
+    height=20,
     x_coord='relative_time',
 )
 print(plot)
 
 plot = plot_logs_grid(
-    [[{'cos':logs['cos']}, {'sin':logs['sin']}],
-     [{'lin':logs['lin'], 'zero':logs['zero']}],
+    [[{'cos':cos}, {'sin':sin}],
+     [{'lin':lin, 'zero':zero}],
     ],
     colors='AUTO',
     legend=True,

@@ -62,8 +62,8 @@ def plot_logs(logs, x_coord='step', *args, **kwargs):
 def plot_logs_grid(
     log_grid,
     x_coord='step',
-    width=160,
-    height=80,
+    width=80,
+    height=20,
     colors='AUTO',
     border=None,
     *args,
@@ -87,7 +87,7 @@ def plot_logs_grid(
             plots[-1].append(plot_logs(
                 logs,
                 width=cell_width,
-                height=40,
+                height=10,
                 colors=cell_colors,
                 *args,
                 **kwargs,

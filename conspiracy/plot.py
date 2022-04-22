@@ -196,8 +196,8 @@ def make_legend(colors, width, color_palette=default_palette):
 # high level plotting ==========================================================
 def plot_poly_lines(
     poly_lines,
-    width=160,
-    height=80,
+    width=80,
+    height=20,
     border=None,
     title=None,
     x_range=None,
@@ -210,8 +210,8 @@ def plot_poly_lines(
     plot muliple polylines 
     
     poly_lines : a dictionary of {name:poly_line} pairs
-    width      : width of the int_image
-    height     : height of the int_image
+    width      : width of the text_image
+    height     : height of the text_image
     title      : the title of the plot (None will omit)
     x_range    : the min/max x coordinates of the image
     y_range    : the min/max y coordinates of the image
@@ -221,8 +221,24 @@ def plot_poly_lines(
     legend     : if True, will add a legend
     min_max_y   : if True, will show the minimum and maximum value of y
     '''
-    assert width%2 == 0
-    assert height%4 == 0
+    
+    # adjust height/width to account for other elements
+    if border == 'line':
+        width -= 2
+        height -= 2
+    elif border == 'top_bottom_line':
+        height -= 2
+    elif border == 'top_line' or border == 'bottom_line':
+        height -= 1
+    
+    if legend:
+        height -= len(poly_lines)
+    
+    if title:
+        height -= 1
+    
+    if min_max_y:
+        height -= 2
     
     if colors is None:
         colors = {name:1 for name in poly_lines}
@@ -234,12 +250,12 @@ def plot_poly_lines(
     
     content = []
     if border == 'top_line' or border == 'top_bottom_line':
-        content.append(hh*(width//2))
+        content.append(hh*(width))
     if title is not None:
-        t = ('%s:'%title).ljust(width//2)[:width//2]
-        content.append()
+        t = ('%s:'%title).ljust(width)[:width]
+        content.append(t)
     if legend:
-        content.append(make_legend(colors, width//2))
+        content.append(make_legend(colors, width))
     
     poly_lines = {k:v for k,v in poly_lines.items() if len(v)}
     
@@ -270,10 +286,10 @@ def plot_poly_lines(
         
         if min_max_y:
             max_line = (
-                Style.RESET_ALL + ('Max: %.04f'%y_max).ljust(width//2))
+                Style.RESET_ALL + ('Max: %.04f'%y_max).ljust(width))
             content.append(max_line)
         
-        image = numpy.zeros((height, width), dtype=numpy.long)
+        image = numpy.zeros((height*4, width*2), dtype=numpy.long)
         
         if x_scale and y_scale:
             for name, poly_line in poly_lines.items():
@@ -285,12 +301,12 @@ def plot_poly_lines(
                 poly_line = numpy.array(poly_line).copy()
                 poly_line[:,0] -= x_range[0]
                 poly_line[:,0] /= x_scale
-                poly_line[:,0] *= width
+                poly_line[:,0] *= width*2-1
                 
                 poly_line[:,1] -= y_range[0]
                 poly_line[:,1] /= y_scale
                 poly_line[:,1] = 1. - poly_line[:,1]
-                poly_line[:,1] *= height
+                poly_line[:,1] *= height*4-1
                 
                 rasterize_poly_line(image, poly_line, color)
             
@@ -299,13 +315,15 @@ def plot_poly_lines(
         
         if min_max_y:
             min_line = (
-                Style.RESET_ALL + ('Min: %.04f'%y_min).ljust(width//2))
+                Style.RESET_ALL + ('Min: %.04f'%y_min).ljust(width))
             content.append(min_line)
     
     if border == 'bottom_line' or border == 'top_bottom_line':
-        content.append(hh*(width//2))
+        content.append(hh*(width))
     
     content = '\n'.join(content)
+    if border == 'line':
+        content = grid([[content]], width, border='line')
 
     return content
 
@@ -319,7 +337,7 @@ def grid(text_images, cell_width, border=None):
     
     grid_width = max(len(row) for row in text_images)
     
-    w = cell_width//2
+    w = cell_width
     def h_line(l, h, m, r):
         return l + (w*h + m) * (grid_width-1) + w*h + r
     
