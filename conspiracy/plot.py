@@ -187,7 +187,8 @@ def make_legend(colors, width, color_palette=default_palette):
     colors : a dictionary mapping names to colors
     '''
     legend = '\n'.join([
-        getattr(Fore, color_palette[color]) + name.ljust(width)[:width]
+        getattr(Fore, color_palette[color]) + name.ljust(width)[:width] +
+        Style.RESET_ALL
         for name, color in colors.items()
     ])
     return legend + Style.RESET_ALL
@@ -197,7 +198,7 @@ def plot_poly_lines(
     poly_lines,
     width=160,
     height=80,
-    top_line=False,
+    border=None,
     title=None,
     x_range=None,
     y_range=None,
@@ -211,7 +212,6 @@ def plot_poly_lines(
     poly_lines : a dictionary of {name:poly_line} pairs
     width      : width of the int_image
     height     : height of the int_image
-    top_line   : if True, a row of dashes will be inserted above the plot
     title      : the title of the plot (None will omit)
     x_range    : the min/max x coordinates of the image
     y_range    : the min/max y coordinates of the image
@@ -233,8 +233,8 @@ def plot_poly_lines(
         }
     
     content = []
-    if top_line:
-        content.append('-'*(width//2))
+    if border == 'top_line' or border == 'top_bottom_line':
+        content.append(hh*(width//2))
     if title is not None:
         t = ('%s:'%title).ljust(width//2)[:width//2]
         content.append()
@@ -302,25 +302,37 @@ def plot_poly_lines(
                 Style.RESET_ALL + ('Min: %.04f'%y_min).ljust(width//2))
             content.append(min_line)
     
+    if border == 'bottom_line' or border == 'top_bottom_line':
+        content.append(hh*(width//2))
+    
     content = '\n'.join(content)
 
     return content
 
-def grid(text_images, grid_width, cell_width, border=None):
+def grid(text_images, cell_width, border=None):
+    '''
+    combines a list of text_images into a single grid text image
+    
+    text_images : the text images that will be arranged into a grid
+    '''
     content = []
     
+    grid_width = max(len(row) for row in text_images)
+    
+    w = cell_width//2
     def h_line(l, h, m, r):
-        return l + (cell_width*h + m) * (grid_width-1) + cell_width*h + r
+        return l + (w*h + m) * (grid_width-1) + w*h + r
     
     if border == 'line':
         content.append(h_line(tl, hh, tm, tr))
     elif border == 'spaces':
         content.append(h_line(ss, ss, ss, ss))
     
-    rows = math.ceil(len(text_images)/grid_width)
-    for i in range(rows):
-        row_cells = text_images[i*grid_width:(i+1)*grid_width]
-        row_cells = [rc.split('\n') for rc in row_cells]
+    #rows = math.ceil(len(text_images)/grid_width)
+    for i, row in enumerate(text_images):
+        #row_cells = text_images[i*grid_width:(i+1)*grid_width]
+        #row_cells = [rc.split('\n') for rc in row_cells]
+        row_cells = [r.split('\n') for r in row]
         while len(row_cells) < grid_width:
             row_cells.append([ss*w] * len(row_cells[0]))
         for lines in zip(*row_cells):
@@ -332,7 +344,7 @@ def grid(text_images, grid_width, cell_width, border=None):
                 line = ''.join(lines)
             content.append(line)
         
-        if i != rows-1:
+        if i != len(text_images)-1:
             if border == 'line':
                 content.append(h_line(ml, hh, mm, mr))
             elif border == 'spaces':

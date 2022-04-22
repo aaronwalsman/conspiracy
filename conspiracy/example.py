@@ -28,7 +28,6 @@ for i in range(n):
 plot = plot_logs(
     logs,
     colors='AUTO',
-    top_line=True,
     legend=True,
     min_max_y=True,
     width=160,
@@ -38,9 +37,9 @@ plot = plot_logs(
 print(plot)
 
 plot = plot_logs(
-    logs,
+    {'cos':logs['cos'], 'lin':logs['lin']},
     colors='AUTO',
-    top_line=True,
+    border='top_line',
     legend=True,
     min_max_y=True,
     width=160,
@@ -50,9 +49,9 @@ plot = plot_logs(
 print(plot)
 
 plot = plot_logs(
-    logs,
+    {'cos':logs['cos'], 'lin':logs['lin']},
     colors='AUTO',
-    top_line=True,
+    border='top_bottom_line',
     legend=True,
     min_max_y=True,
     width=160,
@@ -62,7 +61,9 @@ plot = plot_logs(
 print(plot)
 
 plot = plot_logs_grid(
-    {'cos':logs['cos'], 'sin':logs['sin'], 'lin':logs['lin']},
+    [[{'cos':logs['cos']}, {'sin':logs['sin']}],
+     [{'lin':logs['lin'], 'zero':logs['zero']}],
+    ],
     colors='AUTO',
     legend=True,
     min_max_y=True,

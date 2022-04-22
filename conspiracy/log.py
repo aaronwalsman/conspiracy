@@ -60,9 +60,8 @@ def plot_logs(logs, x_coord='step', *args, **kwargs):
     return plot_poly_lines(poly_lines, *args, **kwargs)
     
 def plot_logs_grid(
-    logs,
+    log_grid,
     x_coord='step',
-    grid_width=2,
     width=160,
     height=80,
     colors='AUTO',
@@ -70,18 +69,29 @@ def plot_logs_grid(
     *args,
     **kwargs
 ):
+    grid_width = max(len(row) for row in log_grid)
     cell_width=width//grid_width - 4
     plots = []
-    for i, (name, log) in enumerate(logs.items()):
-        if colors == 'AUTO':
-            cell_colors = {name:default_colors[i%len(default_colors)]}
-        plots.append(plot_logs(
-            {name:log},
-            width=cell_width,
-            height=40,
-            colors=cell_colors,
-            *args,
-            **kwargs,
-        ))
     
-    return grid(plots, grid_width, cell_width//2, border=border)
+    n = 0
+    for i, row in enumerate(log_grid):
+        plots.append([])
+        for j, logs in enumerate(row):
+            if colors == 'AUTO':
+                cell_colors = {}
+                for k, name in enumerate(logs.keys()):
+                    color = default_colors[(n+k)%len(default_colors)]
+                    cell_colors[name] = color
+            else:
+                cell_colors = None
+            plots[-1].append(plot_logs(
+                logs,
+                width=cell_width,
+                height=40,
+                colors=cell_colors,
+                *args,
+                **kwargs,
+            ))
+            n += len(logs)
+    
+    return grid(plots, cell_width, border=border)
