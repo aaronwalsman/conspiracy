@@ -45,18 +45,25 @@ class Log:
         row = math.ceil(self.step / self.compression)
         return self.data[:row]
     
-    def to_poly_line(self, x_coord):
+    def to_poly_line(self, x_coord, x_range=(0.,1.)):
         if x_coord == 'step':
-            return self.contents()[:,[1,0]]
+            xy = self.contents()[:,[1,0]]
         elif x_coord == 'time':
-            return self.contents()[:,[2,0]]
+            xy = self.contents()[:,[2,0]]
         elif x_coord == 'relative_time':
             xy = self.contents()[:,[2,0]].copy()
             xy[:,0] -= xy[0,0]
-            return xy
+        
+        n = xy.shape[0]
+        start = round(x_range[0] * n)
+        end = round(x_range[1] * n)
+        return xy[start:end]
 
-def plot_logs(logs, x_coord='step', *args, **kwargs):
-    poly_lines = {name:log.to_poly_line(x_coord) for name, log in logs.items()}
+def plot_logs(logs, x_coord='step', x_range=(0.,1.), *args, **kwargs):
+    poly_lines = {
+        name:log.to_poly_line(x_coord, x_range=x_range)
+        for name, log in logs.items()
+    }
     return plot_poly_lines(poly_lines, *args, **kwargs)
     
 def plot_logs_grid(
@@ -64,20 +71,20 @@ def plot_logs_grid(
     x_coord='step',
     width=80,
     height=20,
-    colors='AUTO',
+    colors='auto',
     border=None,
     *args,
     **kwargs
 ):
     grid_width = max(len(row) for row in log_grid)
-    cell_width=width//grid_width - 4
+    cell_width=width//grid_width - 2
     plots = []
     
     n = 0
     for i, row in enumerate(log_grid):
         plots.append([])
         for j, logs in enumerate(row):
-            if colors == 'AUTO':
+            if colors == 'auto':
                 cell_colors = {}
                 for k, name in enumerate(logs.keys()):
                     color = default_colors[(n+k)%len(default_colors)]
@@ -87,7 +94,7 @@ def plot_logs_grid(
             plots[-1].append(plot_logs(
                 logs,
                 width=cell_width,
-                height=10,
+                height=height//len(log_grid),
                 colors=cell_colors,
                 *args,
                 **kwargs,

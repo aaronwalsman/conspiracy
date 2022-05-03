@@ -216,7 +216,7 @@ def plot_poly_lines(
     x_range    : the min/max x coordinates of the image
     y_range    : the min/max y coordinates of the image
     colors     : a dictionary of colors to assign to each poly_line
-                 'AUTO' will automatically asign colors,
+                 'auto' will automatically asign colors,
                  None will assign no colors
     legend     : if True, will add a legend
     min_max_y   : if True, will show the minimum and maximum value of y
@@ -242,7 +242,7 @@ def plot_poly_lines(
     
     if colors is None:
         colors = {name:1 for name in poly_lines}
-    elif colors == 'AUTO':
+    elif colors == 'auto':
         colors = {
             name:default_colors[i%len(default_colors)]
             for i, name in enumerate(poly_lines.keys())
@@ -360,6 +360,8 @@ def grid(text_images, cell_width, border=None):
                 line = ss + ss.join(lines) + ss
             elif border is None:
                 line = ''.join(lines)
+            else:
+                raise ValueError('"border" must be "line", "spaces" or None')
             content.append(line)
         
         if i != len(text_images)-1:

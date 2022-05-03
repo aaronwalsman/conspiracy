@@ -28,7 +28,7 @@ for i in range(n):
 # plot all four functions in one screen using the step index as the x-axis
 plot = plot_logs(
     {'cos':cos, 'sin':sin, 'lin':lin, 'zero':zero},
-    colors='AUTO',
+    colors='auto',
     border='top_line',
     legend=True,
     min_max_y=True,
@@ -41,7 +41,7 @@ print(plot)
 # plot cosine and linear using absolute wall-clock time as the x-axis
 plot = plot_logs(
     {'cos':cos, 'lin':lin},
-    colors='AUTO',
+    colors='auto',
     border='top_line',
     legend=True,
     min_max_y=True,
@@ -54,7 +54,7 @@ print(plot)
 # plot cosine and linear using relative wall-clock time on the x-axis
 plot = plot_logs(
     {'cos':cos, 'lin':lin},
-    colors='AUTO',
+    colors='auto',
     border='line',
     title='Super cool plot',
     legend=True,
@@ -69,9 +69,51 @@ plot = plot_logs_grid(
     [[{'cos':cos}, {'sin':sin}],
      [{'lin':lin, 'zero':zero}],
     ],
-    colors='AUTO',
+    colors='auto',
     legend=True,
     min_max_y=True,
     border='line',
+)
+print(plot)
+
+plot = plot_logs(
+    {'cos':cos, 'lin':lin},
+    colors='auto',
+    border='line',
+    title='Super cool plot',
+    legend=True,
+    min_max_y=True,
+    width=80,
+    height=20,
+    x_coord='step',
+    x_range=(0.,1.),
+)
+print(plot)
+
+plot = plot_logs(
+    {'cos':cos, 'lin':lin},
+    colors='auto',
+    border='line',
+    title='Super cool plot',
+    legend=True,
+    min_max_y=True,
+    width=80,
+    height=20,
+    x_coord='step',
+    x_range=(0.2,1.),
+)
+print(plot)
+
+plot = plot_logs(
+    {'cos':cos, 'lin':lin},
+    colors='auto',
+    border='line',
+    title='Super cool plot',
+    legend=True,
+    min_max_y=True,
+    width=80,
+    height=20,
+    x_coord='step',
+    x_range=(0.5,1.),
 )
 print(plot)
