@@ -7,11 +7,14 @@ from conspiracy.plot import plot_poly_lines, grid, default_colors
 
 default_capacity = 2048
 class Log:
-    def __init__(self, capacity=default_capacity):
+    def __init__(self, capacity=default_capacity, state=None):
         self.capacity = capacity
         self.step = 0
         self.data = numpy.zeros((capacity, 3))
         self.compression = 1
+        
+        if state is not None:
+            self.set_state(state)
 
     def get_state(self):
         return {
