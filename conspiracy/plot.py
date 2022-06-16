@@ -12,8 +12,6 @@ int_image     : An hxw numpy array containing integers.  Each entry in the
                 array represents a pixel, with 0 being "background" and 1...N
                 representing different colors defined by a color palette.
 
-color_palette : A mapping from integers to colorama color names.
-
 text_image :    A string of braille characters with newline characters
                 separating each line.  These are generated from an int_image.
                 Each braille character forms a tiny 4x2 block of pixels, and
@@ -24,18 +22,17 @@ text_image :    A string of braille characters with newline characters
 '''
 
 # defaults =====================================================================
-default_colors = (2,3,4,5,6,7,8)
-default_palette = {
-    0 : 'WHITE',
-    1 : 'WHITE',
-    2 : 'RED',
-    3 : 'BLUE',
-    4 : 'GREEN',
-    5 : 'YELLOW',
-    6 : 'MAGENTA',
-    7 : 'ORANGE',
-    8 : 'PINK',
+color_name_to_index = {
+    'WHITE':1,
+    'RED':2,
+    'BLUE':3,
+    'GREEN':4,
+    'YELLOW':5,
+    'MAGENTA':6,
+    'CYAN':7,
 }
+color_index_to_name = {i:n for n,i in color_name_to_index.items()}
+color_index_to_name[0] = 'WHITE'
 
 # box drawing characters =======================================================
 hh = chr(0x2500 + 0x0)
@@ -70,16 +67,16 @@ def chunk_to_braille(chunk):
 
 def int_image_to_text_image(
     int_image,
+    #colors = None
     use_colors = False,
-    color_palette = default_palette,
+    #color_palette = None,
+    #color_palette = default_palette,
     background_color = None
 ):
     '''
     "renders" an int_image into a text_image
     
     int_image        : a 2 dimensional integer array
-    use_colors       : whether to use color tagging based on the integer values
-    color_palette    : what color to assign each integer value
     background_color : the background color of the entire image
     '''
     h = int_image.shape[0]
@@ -95,7 +92,8 @@ def int_image_to_text_image(
             char = chunk_to_braille(chunk)
             if use_colors:
                 max_id = numpy.max(chunk)
-                color_name = color_palette[max_id]
+                #color_name = color_palette[max_id]
+                color_name = color_index_to_name[max_id]
                 char = getattr(Fore, color_name) + char
             line.append(char)
         line = ''.join(line)
@@ -142,7 +140,7 @@ def rasterize_line_segment(int_image, line_segment, color):
                     continue
                 if x >= int_image.shape[1]:
                     break
-                int_image[y,x] = color
+                int_image[y,x] = color_name_to_index[color]
     
     else:
         if y1 < y0:
@@ -160,7 +158,7 @@ def rasterize_line_segment(int_image, line_segment, color):
                     continue
                 if y >= int_image.shape[0]:
                     break
-                int_image[y,x] = color
+                int_image[y,x] = color_name_to_index[color]
 
 def rasterize_poly_line(int_image, poly_line, color):
     '''
@@ -180,16 +178,17 @@ def rasterize_poly_line(int_image, poly_line, color):
         )
 
 # legend =======================================================================
-def make_legend(colors, width, color_palette=default_palette):
+def make_legend(names, colors, width, color_palette=None):
     '''
     makes a legend for a plot
     
     colors : a dictionary mapping names to colors
     '''
     legend = '\n'.join([
-        getattr(Fore, color_palette[color]) + name.ljust(width)[:width] +
+        getattr(Fore, colors[name]) + name.ljust(width)[:width] +
         Style.RESET_ALL
-        for name, color in colors.items()
+        #for name, color in colors.items()
+        for name in names
     ])
     return legend + Style.RESET_ALL
 
@@ -240,24 +239,17 @@ def plot_poly_lines(
     if min_max_y:
         height -= 2
     
-    if colors is None:
-        colors = {name:1 for name in poly_lines}
-    elif colors == 'auto':
-        colors = {
-            name:default_colors[i%len(default_colors)]
-            for i, name in enumerate(poly_lines.keys())
-        }
-    
     content = []
     if border == 'top_line' or border == 'top_bottom_line':
         content.append(hh*(width))
     if title is not None:
         t = ('%s:'%title).ljust(width)[:width]
         content.append(t)
-    if legend:
-        content.append(make_legend(colors, width))
+    if legend and (colors is not None):
+        content.append(make_legend(poly_lines.keys(), colors, width))
     
     poly_lines = {k:v for k,v in poly_lines.items() if len(v)}
+    line_colors = dict(zip(poly_lines.keys(), range(1, len(poly_lines)+1)))
     
     if len(poly_lines):
         x_min = min(numpy.min(line[:,0]) for line in poly_lines.values())
@@ -309,8 +301,20 @@ def plot_poly_lines(
                 poly_line[:,1] *= height*4-1
                 
                 rasterize_poly_line(image, poly_line, color)
-            
-        image = int_image_to_text_image(image, use_colors=True)
+        
+        #if colors is None:
+        #    color_palette = {}
+        #else:
+        #    color_palette = {
+        #        line_colors[name]:colors[name]
+        #        for name in line_colors.keys()
+        #    }
+        image = int_image_to_text_image(
+            image,
+            use_colors=(colors is not None),
+            #color_palette=color_palette,
+            #colors,
+        )
         content.append(image)
         
         if min_max_y:
@@ -337,6 +341,7 @@ def grid(text_images, cell_width, border=None):
     
     grid_width = max(len(row) for row in text_images)
     
+    # function to draw a horizontal line
     w = cell_width
     def h_line(l, h, m, r):
         return l + (w*h + m) * (grid_width-1) + w*h + r
@@ -346,10 +351,7 @@ def grid(text_images, cell_width, border=None):
     elif border == 'spaces':
         content.append(h_line(ss, ss, ss, ss))
     
-    #rows = math.ceil(len(text_images)/grid_width)
     for i, row in enumerate(text_images):
-        #row_cells = text_images[i*grid_width:(i+1)*grid_width]
-        #row_cells = [rc.split('\n') for rc in row_cells]
         row_cells = [r.split('\n') for r in row]
         while len(row_cells) < grid_width:
             row_cells.append([ss*w] * len(row_cells[0]))
@@ -378,3 +380,41 @@ def grid(text_images, cell_width, border=None):
     content = '\n'.join(content)
     
     return content
+
+def plot_logs(logs, x_coord='step', x_range=(0.,1.), *args, **kwargs):
+    poly_lines = {
+        name:log.to_poly_line(x_coord, x_range=x_range)
+        for name, log in logs.items()
+    }
+    return plot_poly_lines(poly_lines, *args, **kwargs)
+
+def plot_logs_grid(
+    log_grid,
+    x_coord='step',
+    width=80,
+    height=20,
+    colors=None,
+    border=None,
+    *args,
+    **kwargs
+):
+    grid_width = max(len(row) for row in log_grid)
+    cell_width=width//grid_width - 2
+    plots = []
+
+    n = 0
+    for i, row in enumerate(log_grid):
+        plots.append([])
+        for j, logs in enumerate(row):
+            plots[-1].append(plot_logs(
+                logs,
+                width=cell_width,
+                height=height//len(log_grid),
+                colors=colors,
+                *args,
+                **kwargs,
+            ))
+            n += len(logs)
+
+    return grid(plots, cell_width, border=border)
+
