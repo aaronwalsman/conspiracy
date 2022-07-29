@@ -5,7 +5,7 @@ with open("README.md", "r") as fh:
 
 setuptools.setup(
     name="conspiracy",
-    version="0.0.0",
+    version="0.0.1",
     license='MIT',
     install_requires = ['numpy', 'colorama'],
     author="Aaron Walsman",
