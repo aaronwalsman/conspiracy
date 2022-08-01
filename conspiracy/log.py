@@ -24,14 +24,14 @@ class Log:
         return {
             'capacity' : self.capacity,
             'step' : self.step,
-            'data' : self.data,
+            'data' : self.data.tolist(),
             'compression' : self.compression,
         }
 
     def set_state(self, state):
         self.capacity = state['capacity']
         self.step = state['step']
-        self.data = state['data']
+        self.data = numpy.array(state['data'])
         self.compression = state['compression']
 
     def log(self, value):
