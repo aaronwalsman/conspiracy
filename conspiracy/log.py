@@ -52,17 +52,31 @@ class Log:
 
         self.step += 1
     
-    def contents(self):
+    def get_contents(self):
         row = math.ceil(self.step / self.compression)
         return self.data[:row]
     
+    def get_y(self):
+        return self.contents[:,0]
+    
+    def get_x(self):
+        return self.contents[:,1]
+    
+    def get_t(self):
+        return self.contents[:,2]
+    
+    contents = property(get_contents)
+    x = property(get_x)
+    y = property(get_y)
+    t = property(get_t)
+    
     def to_poly_line(self, x_coord, x_range=(0.,1.)):
         if x_coord == 'step':
-            xy = self.contents()[:,[1,0]]
+            xy = self.contents[:,[1,0]]
         elif x_coord == 'time':
-            xy = self.contents()[:,[2,0]]
+            xy = self.contents[:,[2,0]]
         elif x_coord == 'relative_time':
-            xy = self.contents()[:,[2,0]].copy()
+            xy = self.contents[:,[2,0]].copy()
             xy[:,0] -= xy[0,0]
         
         n = xy.shape[0]
