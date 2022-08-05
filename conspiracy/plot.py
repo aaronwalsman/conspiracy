@@ -278,7 +278,7 @@ def plot_poly_lines(
         
         if min_max_y:
             max_line = (
-                Style.RESET_ALL + ('Max: %.04f'%y_max).ljust(width))
+                Style.RESET_ALL + ('Max: %.06f'%y_max).ljust(width))
             content.append(max_line)
         
         image = numpy.zeros((height*4, width*2), dtype=numpy.long)
@@ -319,7 +319,7 @@ def plot_poly_lines(
         
         if min_max_y:
             min_line = (
-                Style.RESET_ALL + ('Min: %.04f'%y_min).ljust(width))
+                Style.RESET_ALL + ('Min: %.06f'%y_min).ljust(width))
             content.append(min_line)
     
     if border == 'bottom_line' or border == 'top_bottom_line':
