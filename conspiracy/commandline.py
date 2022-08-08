@@ -10,8 +10,10 @@ def plot_checkpoint():
     parser.add_argument('checkpoint', type=str, nargs='+')
     parser.add_argument('--keys', nargs='*')
     parser.add_argument('--x-coord', type=str, default='step')
-    parser.add_argument('--x-range', type=float, nargs=2, default=(0., 1.))
+    parser.add_argument('--xrange', type=float, nargs=2, default=(0., 1.))
     parser.add_argument('--format', type=str, default='pickle')
+    parser.add_argument('--height', type=int, default=20)
+    parser.add_argument('--width', type=int, default=80)
     
     args = parser.parse_args()
     
@@ -29,7 +31,8 @@ def plot_checkpoint():
         elif args.format == 'json':
             checkpoint_data = json.load(open(checkpoint_path))
         elif args.format == 'torch':
-            checkpoint_data = torch.load(checkpoint_path)
+            checkpoint_data = torch.load(
+                checkpoint_path, map_location=torch.device('cpu'))
         for key in args.keys:
             try:
                 key = int(key)
@@ -44,11 +47,13 @@ def plot_checkpoint():
     chart = plot_logs(
         logs,
         colors=colors,
-        x_coord=args.x_coord,
-        x_range=args.x_range,
+        title='[' + ']['.join(args.keys) + ']',
         legend=True,
         border='line',
+        height=args.height,
+        width=args.width,
+        x_coord=args.x_coord,
+        x_range=args.xrange,
         min_max_y=True,
-        title='[' + ']['.join(args.keys) + ']',
     )
     print(chart)
