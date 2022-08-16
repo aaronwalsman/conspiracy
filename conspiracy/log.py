@@ -70,7 +70,7 @@ class Log:
     y = property(get_y)
     t = property(get_t)
     
-    def to_poly_line(self, x_coord, x_range=(0.,1.)):
+    def to_poly_line(self, x_coord, x_range=(0.,1.), approximation=False):
         if x_coord == 'step':
             xy = self.contents[:,[1,0]]
         elif x_coord == 'time':
@@ -78,6 +78,13 @@ class Log:
         elif x_coord == 'relative_time':
             xy = self.contents[:,[2,0]].copy()
             xy[:,0] -= xy[0,0]
+        
+        if approximation:
+            r = int(math.floor(xy.shape[0] / approximation))
+            clip_xy = xy[:r*approximation]
+            clip_xy = clip_xy.reshape(approximation, r, 2)
+            clip_xy = numpy.mean(clip_xy, axis=1)
+            xy = clip_xy
         
         n = xy.shape[0]
         start = round(x_range[0] * n)

@@ -23,6 +23,7 @@ text_image :    A string of braille characters with newline characters
 
 # defaults =====================================================================
 color_name_to_index = {
+    'EMPTY':0,
     'WHITE':1,
     'RED':2,
     'BLUE':3,
@@ -189,6 +190,7 @@ def make_legend(names, colors, width, color_palette=None):
         Style.RESET_ALL
         #for name, color in colors.items()
         for name in names
+        if colors[name] != 'EMPTY'
     ])
     return legend + Style.RESET_ALL
 
@@ -249,7 +251,6 @@ def plot_poly_lines(
         content.append(make_legend(poly_lines.keys(), colors, width))
     
     poly_lines = {k:v for k,v in poly_lines.items() if len(v)}
-    line_colors = dict(zip(poly_lines.keys(), range(1, len(poly_lines)+1)))
     
     if len(poly_lines):
         x_min = min(numpy.min(line[:,0]) for line in poly_lines.values())
@@ -302,18 +303,9 @@ def plot_poly_lines(
                 
                 rasterize_poly_line(image, poly_line, color)
         
-        #if colors is None:
-        #    color_palette = {}
-        #else:
-        #    color_palette = {
-        #        line_colors[name]:colors[name]
-        #        for name in line_colors.keys()
-        #    }
         image = int_image_to_text_image(
             image,
             use_colors=(colors is not None),
-            #color_palette=color_palette,
-            #colors,
         )
         content.append(image)
         
@@ -381,12 +373,36 @@ def grid(text_images, cell_width, border=None):
     
     return content
 
-def plot_logs(logs, x_coord='step', x_range=(0.,1.), *args, **kwargs):
+def plot_logs(
+    logs,
+    x_coord='step',
+    x_range=(0.,1.),
+    hollow_mean=None,
+    **kwargs
+):
     poly_lines = {
         name:log.to_poly_line(x_coord, x_range=x_range)
         for name, log in logs.items()
     }
-    return plot_poly_lines(poly_lines, *args, **kwargs)
+    if hollow_mean:
+        if hollow_mean is True:
+            hollow_mean = kwargs.get('width', 80)
+        if 'colors' in kwargs:
+            colors = kwargs['colors']
+        else:
+            colors = {name : 'WHITE' for name in poly_lines}
+        for name, log in logs.items():
+            if hollow_mean < log.get_contents().shape[0]:
+                poly_lines['%s_approximation'%name] = log.to_poly_line(
+                    x_coord,
+                    x_range=x_range,
+                    approximation=hollow_mean,
+                )
+                colors['%s_approximation'%name] = 'EMPTY'
+        
+        kwargs['colors'] = colors
+        
+    return plot_poly_lines(poly_lines, **kwargs)
 
 def plot_logs_grid(
     log_grid,

@@ -1,3 +1,4 @@
+import random
 import time
 import math
 import pickle
@@ -112,5 +113,28 @@ plot = plot_logs(
     height=20,
     x_coord='step',
     x_range=(0.5,1.),
+)
+print(plot)
+
+random_up = Log()
+random_down = Log()
+for i in range(2048):
+    up = i / 2047 + random.random() * 0.05 * i/2047
+    random_up.log(up)
+    
+    down = (1. - i / 2047) + random.random() * 0.5 * i/2047
+    random_down.log(down)
+
+plot = plot_logs(
+    {'up':random_up, 'down':random_down},
+    colors={'up':'RED', 'down':'BLUE'},
+    border='line',
+    title='Hollow Approximation',
+    legend=True,
+    min_max_y=True,
+    width=80,
+    height=20,
+    x_coord='step',
+    hollow_mean=80,
 )
 print(plot)
