@@ -17,7 +17,10 @@ def plot_checkpoint():
     
     args = parser.parse_args()
     
-    all_colors = [k for k in color_name_to_index.keys() if k != 'WHITE']
+    all_colors = [
+        k for k in color_name_to_index.keys()
+        if k != 'WHITE' and k != 'EMPTY'
+    ]
     
     if args.format == 'torch':
         import torch
