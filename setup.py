@@ -18,6 +18,7 @@ setuptools.setup(
     entry_points = {
         'console_scripts' : [
             'conspiracy_plot_checkpoint=conspiracy.commandline:plot_checkpoint',
+            'conspiracy_plot_directory=conspiracy.commandline:plot_directory',
         ]
     }
 )
