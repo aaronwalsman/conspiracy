@@ -3,6 +3,8 @@ from colorama import Fore, Back, Style
 
 import numpy
 
+from scipy.ndimage import uniform_filter1d
+
 '''
 This is a simple library for making plots that can be printed to a terminal.  It
 works "drawing" "pixels" made up of braille characters.  The basic structures
@@ -172,11 +174,12 @@ def rasterize_poly_line(int_image, poly_line, color):
     for i in range(poly_line.shape[0]-1):
         p0 = poly_line[i]
         p1 = poly_line[i+1]
-        rasterize_line_segment(
-            int_image,
-            (p0[0], p0[1], p1[0], p1[1]),
-            color,
-        )
+        if p1.shape[0] == 2 or p1[2]:
+            rasterize_line_segment(
+                int_image,
+                (p0[0], p0[1], p1[0], p1[1]),
+                color,
+            )
 
 # legend =======================================================================
 def make_legend(names, colors, width, color_palette=None):
@@ -373,35 +376,45 @@ def grid(text_images, cell_width, border=None):
     
     return content
 
+def compute_windowed_mean_std(line, window):
+    x = line[:,0]
+    y = line[:,1]
+    
+    y_mean = uniform_filter1d(y, size=window, mode='nearest')
+    y_var = uniform_filter1d((y - y_mean)**2, size=window, mode='nearest')
+    y_std = y_var**0.5
+    
+    length = line.shape[0]
+    mean_std_line = numpy.ones((length*3, 3))
+    mean_std_line[:length,0] = x
+    mean_std_line[:length,1] = y_mean
+    mean_std_line[length:length*2,0] = x
+    mean_std_line[length:length*2,1] = y_mean + y_std
+    mean_std_line[length*2:length*3,0] = x
+    mean_std_line[length*2:length*3,1] = y_mean - y_std
+    mean_std_line[length,2] = 0
+    mean_std_line[length*2,2] = 0
+    
+    return mean_std_line
+
 def plot_logs(
     logs,
     x_coord='step',
     x_range=(0.,1.),
-    hollow_mean=None,
-    **kwargs
+    windowed_mean_std=False,
+    **kwargs,
 ):
     poly_lines = {
         name:log.to_poly_line(x_coord, x_range=x_range)
         for name, log in logs.items()
     }
-    if hollow_mean:
-        if hollow_mean is True:
-            hollow_mean = kwargs.get('width', 80)
-        if 'colors' in kwargs:
-            colors = kwargs['colors']
-        else:
-            colors = {name : 'WHITE' for name in poly_lines}
-        for name, log in logs.items():
-            if hollow_mean < log.get_contents().shape[0]:
-                poly_lines['%s_approximation'%name] = log.to_poly_line(
-                    x_coord,
-                    x_range=x_range,
-                    approximation=hollow_mean,
-                )
-                colors['%s_approximation'%name] = 'EMPTY'
-        
-        kwargs['colors'] = colors
-        
+    
+    if windowed_mean_std:
+        poly_lines = {
+            name : compute_windowed_mean_std(line, windowed_mean_std)
+            for name, line in poly_lines.items()
+        }
+    
     return plot_poly_lines(poly_lines, **kwargs)
 
 def plot_logs_grid(

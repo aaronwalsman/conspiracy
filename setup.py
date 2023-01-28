@@ -7,7 +7,7 @@ setuptools.setup(
     name="conspiracy",
     version="0.0.1",
     license='MIT',
-    install_requires = ['numpy', 'colorama'],
+    install_requires = ['numpy', 'scipy', 'colorama'],
     author="Aaron Walsman",
     author_email="aaronwalsman@gmail.com",
     description='Terminal Plotter',

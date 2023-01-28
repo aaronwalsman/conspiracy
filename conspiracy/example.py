@@ -116,25 +116,24 @@ plot = plot_logs(
 )
 print(plot)
 
-random_up = Log()
-random_down = Log()
-for i in range(2048):
-    up = i / 2047 + random.random() * 0.05 * i/2047
-    random_up.log(up)
-    
-    down = (1. - i / 2047) + random.random() * 0.5 * i/2047
-    random_down.log(down)
+cos_noise = Log(capacity=5000)
+sin_noise = Log(capacity=5000)
 
-plot = plot_logs(
-    {'up':random_up, 'down':random_down},
-    colors={'up':'RED', 'down':'BLUE'},
-    border='line',
-    title='Hollow Approximation',
-    legend=True,
-    min_max_y=True,
-    width=80,
-    height=20,
-    x_coord='step',
-    hollow_mean=80,
-)
-print(plot)
+for epoch in range(1,11):
+    print('Epoch: %i'%epoch)
+    for i in range(50*(epoch-1), 50*epoch):
+        cos_noise.log(math.cos(i/100 * math.pi) + random.random() * 0.75)
+        sin_noise.log(math.sin(i/250 * math.pi) + random.random() * 0.25)
+        
+    plot = plot_logs(
+        {'cos':cos_noise, 'sin':sin_noise},
+        colors={'cos':'RED', 'sin':'BLUE'},
+        border='line',
+        legend=True,
+        min_max_y=True,
+        width=80,
+        height=20,
+        x_coord='step',
+        windowed_mean_std=100,
+    )
+    print(plot)

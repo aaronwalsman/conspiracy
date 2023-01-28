@@ -7,7 +7,11 @@ from conspiracy.plot import plot_poly_lines, grid
 
 default_capacity = 2048
 class Log:
-    def __init__(self, capacity=default_capacity, state=None):
+    def __init__(self,
+        capacity=default_capacity,
+        state=None,
+        log_callbacks=None,
+    ):
         self.capacity = capacity
         self.step = 0
         if capacity == 'adaptive':
@@ -19,7 +23,11 @@ class Log:
         
         if state is not None:
             self.set_state(state)
-
+        
+        if log_callbacks is None:
+            log_callbacks = []
+        self.log_callbacks = log_callbacks
+        
     def get_state(self):
         return {
             'capacity' : self.capacity,
@@ -35,6 +43,7 @@ class Log:
         self.compression = state['compression']
 
     def log(self, value):
+        value = float(value)
         row = self.step // self.compression
         if row >= self.data.shape[0]:
             if self.capacity == 'adaptive':
@@ -49,12 +58,27 @@ class Log:
         n = self.step % self.compression
         item = [value, float(self.step), time.time()]
         self.data[row] = (self.data[row] * n + item)/(n+1)
-
+        
+        for log_callback in self.log_callbacks:
+            log_callback(value, self.step)
+        
         self.step += 1
+    
+    def add_log_callback(self, log_callback):
+        self.log_callbacks.append(log_callback)
+    
+    def add_tensorboard_log_callback(self, writer, name):
+        def log_tensorboard(value, step):
+            writer.add_scalar(name, value, step)
+        self.add_log_callback(log_tensorboard)
     
     def get_contents(self):
         row = math.ceil(self.step / self.compression)
         return self.data[:row]
+    
+    #def get_recent_y(self):
+    #    row = math.ceil(self.step / self.compression)
+    #    return self.contents[row-1,0]
     
     def get_y(self):
         return self.contents[:,0]
