@@ -7,7 +7,6 @@ from conspiracy.log import Log
 from conspiracy.plot import plot_logs, plot_logs_grid
 
 # make some data
-# notice we are putting some sleeps in here to mess with the wall-clock time
 cos = Log()
 sin = Log()
 lin = Log()
