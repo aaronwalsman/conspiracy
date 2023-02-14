@@ -11,21 +11,25 @@ class Scheduler(ABC):
         
         update_index = steps // self.frequency
         if update_index > self.previous_index:
+            # it's important to set previous_index before self.update
+            # so that get_state will be valid inside the update method
+            # which is relevant for the checkpointer
+            self.previous_index = update_index
             result = self.update(update_index, steps)
         else:
             result = None
         
-        self.previous_index = update_index
+        #self.previous_index = update_index
         return result
     
     @abstractmethod
     def update(self, index, steps):
         pass
     
-    def state_dict(self):
+    def get_state(self):
         return {'previous_index' : self.previous_index}
     
-    def load_state_dict(self, state_dict):
+    def set_state(self, state_dict):
         self.previous_index = state_dict['previous_index']
 
 class DynamicScheduler(Scheduler):
