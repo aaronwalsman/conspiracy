@@ -20,3 +20,14 @@ The `capacity` argument of `Log` indicates how many values are stored in the log
 When you overrun the capacity, the log starts compressing (and averaging) the data stored inside it.
 `capacity` can also be `'adaptive'` in which case the log will continue to grow to store all logged data.
 See `conspiracy/example.py` for more examples.
+
+If you want, you can also simultaneously send data to tensorboard using:
+```
+from torch.utils.tensorboard import SummaryWriter
+from conspiracy import Log
+my_writer = SummaryWriter()
+my_log = Log(capacity=1024)
+my_log.add_tensorboard_callback(my_writer, 'my_scalar_name')
+```
+
+At this point any calls to `my_log.log(value)` will also call `my_writer.add_scalar('my_scalar_name', value)` under the hood.
