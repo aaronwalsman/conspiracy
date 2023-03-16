@@ -39,3 +39,19 @@ class DynamicScheduler(Scheduler):
     
     def update(self, index, steps):
         return self.dynamic_update(index, steps)
+
+class LinearSchedule:
+    def __init__(self, start_v, end_v, start_t, end_t):
+        self.start_v = start_v
+        self.end_v = end_v
+        self.start_t = start_t
+        self.end_t = end_t
+    
+    def value(self, t):
+        if t < self.start_t:
+            return self.start_v
+        elif t > self.end_t:
+            return self.end_v
+        else:
+            tt = (t-self.start_t)/(self.end_t-self.start_t)
+            return self.start_v + (self.end_v-self.start_v)*tt
