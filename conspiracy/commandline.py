@@ -41,7 +41,11 @@ def plot_logfiles(
                 key = int(key)
             except ValueError:
                 pass
-            checkpoint_data = checkpoint_data[key]
+            try:
+                checkpoint_data = checkpoint_data[key]
+            except KeyError:
+                print(checkpoint_data.keys())
+                raise
         
         log = Log(state=checkpoint_data)
         logs[log_path] = log

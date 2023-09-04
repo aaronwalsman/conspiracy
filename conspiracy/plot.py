@@ -285,7 +285,7 @@ def plot_poly_lines(
                 Style.RESET_ALL + ('Max: %.06f'%y_max).ljust(width))
             content.append(max_line)
         
-        image = numpy.zeros((height*4, width*2), dtype=numpy.long)
+        image = numpy.zeros((height*4, width*2), dtype=int)
         
         if x_scale and y_scale:
             for name, poly_line in poly_lines.items():
@@ -446,4 +446,66 @@ def plot_logs_grid(
             n += len(logs)
 
     return grid(plots, cell_width, border=border)
+
+def plot_histogram(
+    histogram,
+    colors=None,
+    max_histogram=None,
+    show_names=True,
+    width=80,
+    format_string='%s:',
+    show_scale=False,
+):
+    if show_names:
+        max_name_length = max(len(format_string%k) for k in histogram.keys())
+        clipped_width = width - max_name_length
+    else:
+        clipped_width = width
+    
+    int_image = numpy.zeros((len(histogram)*4, clipped_width*2))
+    if max_histogram is None:
+        max_histogram = max(histogram.values())
+        histogram = {k:v/max_histogram for k,v in histogram.items()}
+
+    for i, (k, v) in enumerate(histogram.items()):
+        bar_width = round(v*clipped_width*2)
+        int_image[i*4:(i+1)*4,:bar_width] = 1
+
+    text_image = int_image_to_text_image(int_image)
+
+    if show_names:
+        labels = '\n'.join(
+            (format_string%k).ljust(max_name_length) for k in histogram)
+
+        text_image = '\n'.join(
+            a + b for a,b in zip(labels.splitlines(), text_image.splitlines()))
+    
+    if colors is not None:
+        lines = text_image.splitlines()
+        for i,k in enumerate(histogram.keys()):
+            lines[i] = getattr(Fore, colors[k]) + lines[i] + Style.RESET_ALL
+        text_image = '\n'.join(lines)
+    
+    if show_scale:
+        scale_line = ''
+        if show_names:
+            scale_line = scale_line + ' ' * max_name_length
+        scale_line = scale_line + ('%.02f'%0)
+        scale_line = (
+            scale_line + ('%.02f'%max_histogram).rjust(width-len(scale_line)))
+        text_image = scale_line + '\n' + text_image
+    
+    return text_image
+
+def numeric_histogram(data, bins, show_names=True, width=80, show_scale=False):
+    hist, edges = numpy.histogram(data, bins=bins)
+    labels = [(a,b) for a, b in zip(edges[:-1], edges[1:])]
+    hist = {l:h for l,h in zip(labels, hist)}
+    return plot_histogram(
+        hist,
+        show_names=show_names,
+        width=width,
+        format_string='%.02f/%.02f:',
+        show_scale=show_scale,
+    )
 
