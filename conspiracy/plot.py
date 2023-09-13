@@ -470,6 +470,7 @@ def plot_histogram(
     for i, (k, v) in enumerate(histogram.items()):
         bar_width = round(v*clipped_width*2)
         int_image[i*4:(i+1)*4,:bar_width] = 1
+        int_image[i*4+1:(i+1)*4-1,1:bar_width-1] = 0
 
     text_image = int_image_to_text_image(int_image)
 
@@ -505,7 +506,7 @@ def numeric_histogram(data, bins, show_names=True, width=80, show_scale=False):
         hist,
         show_names=show_names,
         width=width,
-        format_string='%.02f/%.02f:',
+        format_string='%.02f-%.02f:',
         show_scale=show_scale,
     )
 
